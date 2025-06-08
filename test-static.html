@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Deidentifier - Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { color: #333; text-align: center; margin-bottom: 30px; }
+        textarea { 
+            width: 100%; 
+            height: 150px; 
+            margin: 10px 0; 
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background: #0056b3; }
+        .success { color: #28a745; font-weight: bold; }
+        .output { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .demo-text { 
+            background: #e9ecef; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Data Deidentifier - Test Version</h1>
+        
+        <div class="demo-text">
+            <strong>📝 Try this sample text:</strong><br>
+            Hi, my name is John Smith. You can email me at john.smith@email.com or call me at (555) 123-4567. My SSN is 123-45-6789.
+        </div>
+        
+        <label for="input"><strong>Input Text:</strong></label>
+        <textarea id="input" placeholder="Enter text with sensitive information..."></textarea>
+        
+        <button onclick="processText()">🔒 Deidentify Text</button>
+        <button onclick="copyOutput()">📋 Copy Output</button>
+        <button onclick="clearAll()">🧹 Clear</button>
+        
+        <label for="output"><strong>Deidentified Output:</strong></label>
+        <textarea id="output" readonly></textarea>
+        
+        <div id="status"></div>
+        
+        <div class="output">
+            <strong>✅ Status:</strong> <span class="success">Application is working!</span><br>
+            If you can see this page and the buttons work, the setup is successful.
+        </div>
+    </div>
+
+    <script>
+        // Simple PII detection patterns
+        const patterns = {
+            email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
+            phone: /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g,
+            ssn: /\b\d{3}-?\d{2}-?\d{4}\b/g,
+            name: /\b[A-Z][a-z]+ [A-Z][a-z]+\b/g
+        };
+
+        let counter = 1;
+
+        function processText() {
+            const input = document.getElementById('input').value;
+            const output = document.getElementById('output');
+            const status = document.getElementById('status');
+            
+            if (!input.trim()) {
+                status.innerHTML = '<span style="color: red;">Please enter some text to process.</span>';
+                return;
+            }
+
+            let processed = input;
+            let detectedCount = 0;
+
+            // Replace emails
+            processed = processed.replace(patterns.email, () => {
+                detectedCount++;
+                return `[EMAIL_${counter++}]`;
+            });
+
+            // Replace phones
+            processed = processed.replace(patterns.phone, () => {
+                detectedCount++;
+                return `[PHONE_${counter++}]`;
+            });
+
+            // Replace SSNs
+            processed = processed.replace(patterns.ssn, () => {
+                detectedCount++;
+                return `[SSN_${counter++}]`;
+            });
+
+            // Replace names
+            processed = processed.replace(patterns.name, () => {
+                detectedCount++;
+                return `[NAME_${counter++}]`;
+            });
+
+            output.value = processed;
+            status.innerHTML = `<span class="success">✅ Processed! Found ${detectedCount} sensitive items.</span>`;
+        }
+
+        function copyOutput() {
+            const output = document.getElementById('output');
+            const status = document.getElementById('status');
+            
+            if (!output.value) {
+                status.innerHTML = '<span style="color: red;">No output to copy. Process some text first.</span>';
+                return;
+            }
+
+            output.select();
+            document.execCommand('copy');
+            status.innerHTML = '<span class="success">📋 Copied to clipboard!</span>';
+        }
+
+        function clearAll() {
+            document.getElementById('input').value = '';
+            document.getElementById('output').value = '';
+            document.getElementById('status').innerHTML = '';
+            counter = 1;
+        }
+
+        // Add sample text button
+        function loadSample() {
+            document.getElementById('input').value = 'Hi, my name is John Smith. You can email me at john.smith@email.com or call me at (555) 123-4567. My SSN is 123-45-6789.';
+        }
+    </script>
+</body>
+</html>
